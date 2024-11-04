@@ -22,7 +22,7 @@ func main() {
 
     mainWindow.SetContent(container.NewVBox(
         simulationScene.Render(),
-    ))
+    ))   
 
     mainWindow.ShowAndRun()
 }

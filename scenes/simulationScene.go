@@ -71,7 +71,7 @@ func (scene *SimulationScene) runSimulation() {
 
             // Simula el tiempo de estacionamiento
             go func(v *models.Vehicle, vView *views.VehicleView, index int) {
-                time.Sleep(30 * time.Second) // Tiempo estacionado
+                time.Sleep(50 * time.Second) // Tiempo estacionado
                 scene.ParkingLot.Exit()
                 scene.ParkingLotView.Spaces[index] = nil // Libera el espacio
                 scene.ParkingLotView.UpdateParkingLot()
@@ -103,7 +103,7 @@ func (scene *SimulationScene) runSimulation() {
 func (scene *SimulationScene) addEvent(event string, isWaiting bool) {
     // Limitar el número máximo de líneas en EventList
     maxLines := 50
-    maxChars := 1000 // Limite de caracteres total en el evento
+    maxChars := 1000 
 
     // Actualiza el texto de la lista de eventos en la interfaz
     currentText := scene.EventList.Text
@@ -112,7 +112,7 @@ func (scene *SimulationScene) addEvent(event string, isWaiting bool) {
 
     // Si excede el máximo de líneas, elimina las más antiguas
     if len(lines) > maxLines {
-        lines = lines[len(lines)-maxLines:] // Mantiene solo las últimas `maxLines` líneas
+        lines = lines[len(lines)-maxLines:] 
     }
 
     // Unir las líneas y limitar la longitud total
@@ -137,7 +137,7 @@ func (scene *SimulationScene) addEvent(event string, isWaiting bool) {
     } else {
         // Eliminar mensajes de espera después de 5 segundos
         go func() {
-            time.Sleep(5 * time.Second) // Duración del mensaje de espera
+            time.Sleep(5 * time.Second) 
             currentText := scene.EventList.Text
             updatedText := removeEvent(currentText, event)
             scene.EventList.SetText(updatedText)

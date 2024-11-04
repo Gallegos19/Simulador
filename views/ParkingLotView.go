@@ -2,10 +2,11 @@ package views
 
 import (
     "fyne.io/fyne/v2"
-	"strconv" 
+    "fyne.io/fyne/v2/canvas"
     "fyne.io/fyne/v2/container"
     "fyne.io/fyne/v2/widget"
     "main/models"
+    "strconv"
 )
 
 type ParkingLotView struct {
@@ -13,18 +14,25 @@ type ParkingLotView struct {
     Spaces       []*VehicleView
     Content      *fyne.Container
     InfoLabel    *widget.Label
+    FreeSpaceImg *canvas.Image
 }
 
 func NewParkingLotView(parkingLot *models.ParkingLot) *ParkingLotView {
+    // Cargar la imagen de espacio libre
+    freeSpaceImage := canvas.NewImageFromFile("img/slot2.png")
+    freeSpaceImage.FillMode = canvas.ImageFillContain // Ajusta el modo de llenado de la imagen
+
     view := &ParkingLotView{
-        ParkingLot: parkingLot,
-        InfoLabel: widget.NewLabel("Espacios disponibles: 20"),
+        ParkingLot:   parkingLot,
+        InfoLabel:    widget.NewLabel("Espacios disponibles: 20"),
+        FreeSpaceImg: freeSpaceImage,
     }
 
     // Crea los espacios vacíos en el estacionamiento
     view.Content = container.NewGridWithColumns(5) // Ejemplo: 5 espacios por fila
     for i := 0; i < parkingLot.Capacity; i++ {
-        space := widget.NewLabel("Libre")
+        space := canvas.NewImageFromFile("img/slot2.png")
+        space.FillMode = canvas.ImageFillContain
         view.Content.Add(space)
         view.Spaces = append(view.Spaces, nil) // Espacio vacío al inicio
     }
@@ -37,7 +45,10 @@ func (view *ParkingLotView) UpdateParkingLot() {
         if view.Spaces[i] != nil {
             view.Content.Objects[i] = view.Spaces[i].Render()
         } else {
-            view.Content.Objects[i] = widget.NewLabel("Libre")
+            // Usar la imagen de espacio libre cuando no hay un vehículo en el espacio
+            freeSpaceImage := canvas.NewImageFromFile("img/slot2.png")
+            freeSpaceImage.FillMode = canvas.ImageFillContain
+            view.Content.Objects[i] = freeSpaceImage
         }
     }
     view.InfoLabel.SetText("Espacios disponibles: " + strconv.Itoa(view.ParkingLot.Capacity - view.ParkingLot.Occupied))
