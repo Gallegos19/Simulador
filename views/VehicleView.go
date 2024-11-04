@@ -64,7 +64,7 @@ func NewVehicleView(vehicle *models.Vehicle, facingRight bool) *VehicleView {
 
 	img := canvas.NewImageFromFile(imagePath)
 	img.FillMode = canvas.ImageFillContain
-	img.SetMinSize(fyne.NewSize(50, 30)) 
+	img.SetMinSize(fyne.NewSize(80, 50)) 
 
 	return &VehicleView{
 		Vehicle: vehicle,
