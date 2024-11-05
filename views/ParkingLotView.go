@@ -20,7 +20,7 @@ type ParkingLotView struct {
 func NewParkingLotView(parkingLot *models.ParkingLot) *ParkingLotView {
     // Cargar la imagen de espacio libre
     freeSpaceImage := canvas.NewImageFromFile("img/slot2.png")
-    freeSpaceImage.FillMode = canvas.ImageFillContain // Ajusta el modo de llenado de la imagen
+    freeSpaceImage.FillMode = canvas.ImageFillContain
 
     view := &ParkingLotView{
         ParkingLot:   parkingLot,
@@ -29,7 +29,7 @@ func NewParkingLotView(parkingLot *models.ParkingLot) *ParkingLotView {
     }
 
     // Crea los espacios vacíos en el estacionamiento
-    view.Content = container.NewGridWithColumns(5) // Ejemplo: 5 espacios por fila
+    view.Content = container.NewGridWithColumns(5)
     for i := 0; i < parkingLot.Capacity; i++ {
         space := canvas.NewImageFromFile("img/slot2.png")
         space.FillMode = canvas.ImageFillContain

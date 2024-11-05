@@ -71,7 +71,7 @@ func (scene *SimulationScene) runSimulation() {
 
             // Simula el tiempo de estacionamiento
             go func(v *models.Vehicle, vView *views.VehicleView, index int) {
-                time.Sleep(20 * time.Second) // Tiempo estacionado
+                time.Sleep(40 * time.Second) // Tiempo estacionado
                 scene.ParkingLot.Exit()
                 scene.ParkingLotView.Spaces[index] = nil // Libera el espacio
                 scene.ParkingLotView.UpdateParkingLot()
@@ -118,7 +118,7 @@ func (scene *SimulationScene) addEvent(event string, isWaiting bool) {
     // Unir las líneas y limitar la longitud total
     newText := strings.Join(lines, "\n")
     if len(newText) > maxChars {
-        newText = newText[len(newText)-maxChars:] // Mantener solo los últimos `maxChars` caracteres
+        newText = newText[len(newText)-maxChars:] 
     }
 
     scene.EventList.SetText(newText)
