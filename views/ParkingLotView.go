@@ -1,40 +1,41 @@
 package views
 
 import (
-    "fyne.io/fyne/v2"
-    "fyne.io/fyne/v2/canvas"
-    "fyne.io/fyne/v2/container"
-    "fyne.io/fyne/v2/widget"
-    "main/models"
-    "strconv"
+	"fmt"
+	"main/models"
+	"strconv"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 type ParkingLotView struct {
     ParkingLot   *models.ParkingLot
-    Spaces       []*VehicleView
+    Spaces       map[int]*VehicleView 
     Content      *fyne.Container
     InfoLabel    *widget.Label
     FreeSpaceImg *canvas.Image
 }
 
 func NewParkingLotView(parkingLot *models.ParkingLot) *ParkingLotView {
-    // Cargar la imagen de espacio libre
     freeSpaceImage := canvas.NewImageFromFile("img/slot2.png")
     freeSpaceImage.FillMode = canvas.ImageFillContain
 
     view := &ParkingLotView{
         ParkingLot:   parkingLot,
-        InfoLabel:    widget.NewLabel("Espacios disponibles: 20"),
+        InfoLabel:    widget.NewLabel("Espacios disponibles: " + strconv.Itoa(parkingLot.Capacity)),
         FreeSpaceImg: freeSpaceImage,
+        Spaces:       make(map[int]*VehicleView),
     }
 
-    // Crea los espacios vacíos en el estacionamiento
     view.Content = container.NewGridWithColumns(5)
     for i := 0; i < parkingLot.Capacity; i++ {
         space := canvas.NewImageFromFile("img/slot2.png")
         space.FillMode = canvas.ImageFillContain
+        space.SetMinSize(fyne.NewSize(80, 50)) 
         view.Content.Add(space)
-        view.Spaces = append(view.Spaces, nil) // Espacio vacío al inicio
     }
 
     return view
@@ -42,18 +43,46 @@ func NewParkingLotView(parkingLot *models.ParkingLot) *ParkingLotView {
 
 func (view *ParkingLotView) UpdateParkingLot() {
     for i := 0; i < view.ParkingLot.Capacity; i++ {
-        if view.Spaces[i] != nil {
-            view.Content.Objects[i] = view.Spaces[i].Render()
+        if vehicleView, occupied := view.Spaces[i]; occupied && vehicleView != nil {
+            view.Content.Objects[i] = vehicleView.Render()
         } else {
-            // Usar la imagen de espacio libre cuando no hay un vehículo en el espacio
             freeSpaceImage := canvas.NewImageFromFile("img/slot2.png")
             freeSpaceImage.FillMode = canvas.ImageFillContain
+            freeSpaceImage.SetMinSize(fyne.NewSize(80, 50)) 
             view.Content.Objects[i] = freeSpaceImage
         }
     }
-    view.InfoLabel.SetText("Espacios disponibles: " + strconv.Itoa(view.ParkingLot.Capacity - view.ParkingLot.Occupied))
+    availableSpaces := view.ParkingLot.Capacity - len(view.Spaces)
+    view.InfoLabel.SetText("Espacios disponibles: " + strconv.Itoa(availableSpaces))
     view.Content.Refresh()
 }
+
+func (view *ParkingLotView) RemoveVehicle(spaceIndex int) {
+    delete(view.Spaces, spaceIndex)
+
+    freeSpaceImage := canvas.NewImageFromFile("img/slot2.png")
+    freeSpaceImage.FillMode = canvas.ImageFillContain
+    freeSpaceImage.SetMinSize(fyne.NewSize(80, 50)) 
+
+    if spaceIndex >= 0 && spaceIndex < len(view.Content.Objects) {
+        view.Content.Objects[spaceIndex] = freeSpaceImage
+    } else {
+        fmt.Println("Error: spaceIndex fuera de rango al actualizar la vista")
+    }
+
+    availableSpaces := view.ParkingLot.Capacity - len(view.Spaces)
+    view.InfoLabel.SetText("Espacios disponibles: " + strconv.Itoa(availableSpaces))
+
+    view.Content.Refresh()
+}
+
+func (view *ParkingLotView) AddVehicle(spaceIndex int, vehicleView *VehicleView) {
+    view.Spaces[spaceIndex] = vehicleView
+    view.UpdateParkingLot()
+}
+
+
+
 
 func (view *ParkingLotView) Render() fyne.CanvasObject {
     return container.NewVBox(view.InfoLabel, view.Content)

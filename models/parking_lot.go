@@ -1,41 +1,50 @@
 package models
 
 import (
-    "sync"
+	"fmt"
+	"sync"
 )
 
 type ParkingLot struct {
-    Capacity    int
-    Occupied    int
-    Entrance    *sync.Mutex
-    AvailableSpots chan struct{}
+    Capacity       int
+    OccupiedSpaces map[int]*Vehicle
+    Entrance       *sync.Mutex
+    AvailableSpots chan int
 }
 
 func NewParkingLot(capacity int) *ParkingLot {
+    availableSpots := make(chan int, capacity)
+    for i := 0; i < capacity; i++ {
+        availableSpots <- i
+    }
+
     return &ParkingLot{
-        Capacity:    capacity,
-        Occupied:    0,
-        Entrance:    &sync.Mutex{},
-        AvailableSpots: make(chan struct{}, capacity),
+        Capacity:       capacity,
+        OccupiedSpaces: make(map[int]*Vehicle),
+        Entrance:       &sync.Mutex{},
+        AvailableSpots: availableSpots,
     }
 }
 
-func (p *ParkingLot) Enter(vehicle *Vehicle) bool {
+func (p *ParkingLot) Enter(vehicle *Vehicle) (int, bool) {
     p.Entrance.Lock()
     defer p.Entrance.Unlock()
-    
-    if p.Occupied < p.Capacity {
-        p.Occupied++
-        p.AvailableSpots <- struct{}{}
-        return true
+
+    select {
+    case spaceIndex := <-p.AvailableSpots:
+        p.OccupiedSpaces[spaceIndex] = vehicle
+        return spaceIndex, true
+    default:
+        vehicle.Block()
+        return -1, false
     }
-    vehicle.Blocked = true
-    return false
 }
 
-func (p *ParkingLot) Exit() {
+func (p *ParkingLot) Exit(spaceIndex int) {
     p.Entrance.Lock()
     defer p.Entrance.Unlock()
-    <-p.AvailableSpots
-    p.Occupied--
+    delete(p.OccupiedSpaces, spaceIndex)
+    fmt.Println("Espacio liberado:", spaceIndex) 
+    p.AvailableSpots <- spaceIndex
 }
+
