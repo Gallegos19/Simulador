@@ -18,11 +18,9 @@ func main() {
 	mainWindow := myApp.NewWindow("Simulador de Estacionamiento")
 	mainWindow.Resize(fyne.NewSize(800, 600))
 
-	// Crear el estacionamiento y la escena de simulación
-	parkingLot := models.NewParkingLot(20)
+	parkingLot := models.NewParkingLot(5)
 	simulationScene := scenes.NewSimulationScene(parkingLot)
 
-	// Encabezado estilizado
 	header := widget.NewLabel("Simulador de Estacionamiento")
 	header.Alignment = fyne.TextAlignCenter
 	header.TextStyle = fyne.TextStyle{Bold: true}

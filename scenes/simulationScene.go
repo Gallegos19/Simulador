@@ -1,7 +1,6 @@
 package scenes
 
 import (
-	"fmt"
 	"time"
 
 	"main/models"
@@ -51,41 +50,22 @@ func NewSimulationScene(parkingLot *models.ParkingLot) *SimulationScene {
     return scene
 }
 
-
 func (scene *SimulationScene) runSimulation() {
     for i := 0; i < 20; i++ {
         vehicle := models.NewVehicle()
-        go scene.manageVehicle(vehicle)
-        time.Sleep(500 * time.Millisecond)
-    }
-}
-
-func (scene *SimulationScene) manageVehicle(vehicle *models.Vehicle) {
-    for {
-        spaceIndex, entered := scene.ParkingLot.Enter(vehicle)
-        if entered {
-            vehicleView := views.NewVehicleView(vehicle, true)
-
-            scene.updateChan <- func() {
-                scene.ParkingLotView.AddVehicle(spaceIndex, vehicleView)
-            }
-
-            fmt.Println("Vehículo", vehicle.ID, "ha entrado al estacionamiento.")
-
-            // Simula el tiempo de estacionamiento
-            vehicle.Park(2*time.Second, func() {
-                scene.ParkingLot.Exit(spaceIndex)
-                
-                // Envía la actualización de la UI al canal
+        go vehicle.Manage(scene.ParkingLot, scene.updateChan, 
+            func(spaceIndex int) { // onEntry
+                vehicleView := views.NewVehicleView(vehicle, true)
+                scene.updateChan <- func() {
+                    scene.ParkingLotView.AddVehicle(spaceIndex, vehicleView)
+                }
+            }, 
+            func(spaceIndex int) { // onExit
                 scene.updateChan <- func() {
                     scene.ParkingLotView.RemoveVehicle(spaceIndex)
                 }
-
-                fmt.Println("Vehículo", vehicle.ID, "ha salido del estacionamiento.")
             })
-            return 
-        }
-        time.Sleep(1 * time.Second)
+        time.Sleep(500 * time.Millisecond)
     }
 }
 
